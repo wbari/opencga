@@ -25,13 +25,17 @@ public class ArchivedVariantFileToHbaseConverter implements ComplexTypeConverter
     private StudyDBAdaptor studyDbAdaptor;
 
     /**
+     * Not-going-to-be-used row key, just necessary to satisfy HBase API.
+     */
+    private static byte[] rowkey = Bytes.toBytes("ArchivedVariantFileToHbaseConverter");
+    
+    
+    /**
      * Create a converter between ArchivedVariantFile and HBase entities when
      * there is no need to provide a list of samples nor statistics.
      */
     public ArchivedVariantFileToHbaseConverter() {
-        this.includeSamples = false;
-        this.samples = null;
-        this.statsConverter = null;
+        this(null, null);
     }
 
     /**
@@ -44,6 +48,7 @@ public class ArchivedVariantFileToHbaseConverter implements ComplexTypeConverter
      */
     public ArchivedVariantFileToHbaseConverter(List<String> samples, VariantStatsToHbaseConverter statsConverter) {
         this.samples = samples;
+        this.includeSamples = samples != null;
         this.statsConverter = statsConverter;
     }
 
@@ -54,7 +59,7 @@ public class ArchivedVariantFileToHbaseConverter implements ComplexTypeConverter
 
     @Override
     public Put convertToStorageType(ArchivedVariantFile object) {
-        Put put = new Put();
+        Put put = new Put(rowkey);
         String prefix = object.getStudyId() + "_" + object.getFileId() + "_";
 
         // Attributes
