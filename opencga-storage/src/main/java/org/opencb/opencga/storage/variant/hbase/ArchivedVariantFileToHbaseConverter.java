@@ -19,10 +19,7 @@ public class ArchivedVariantFileToHbaseConverter implements ComplexTypeConverter
 
     private boolean includeSamples;
 
-    private List<String> samples;
-
     private VariantStatsToHbaseConverter statsConverter;
-    private StudyDBAdaptor studyDbAdaptor;
 
     /**
      * Not-going-to-be-used row key, just necessary to satisfy HBase API.
@@ -35,7 +32,7 @@ public class ArchivedVariantFileToHbaseConverter implements ComplexTypeConverter
      * there is no need to provide a list of samples nor statistics.
      */
     public ArchivedVariantFileToHbaseConverter() {
-        this(null, null);
+        this(false, null);
     }
 
     /**
@@ -43,12 +40,11 @@ public class ArchivedVariantFileToHbaseConverter implements ComplexTypeConverter
      * samples and a statistics converter may be provided in case those should
      * be processed during the conversion.
      *
-     * @param samples The list of samples, if any
+     * @param includeSamples Whether to serialise the samples
      * @param statsConverter The object used to convert the file statistics
      */
-    public ArchivedVariantFileToHbaseConverter(List<String> samples, VariantStatsToHbaseConverter statsConverter) {
-        this.samples = samples;
-        this.includeSamples = samples != null;
+    public ArchivedVariantFileToHbaseConverter(boolean includeSamples, VariantStatsToHbaseConverter statsConverter) {
+        this.includeSamples = includeSamples;
         this.statsConverter = statsConverter;
     }
 
@@ -68,7 +64,7 @@ public class ArchivedVariantFileToHbaseConverter implements ComplexTypeConverter
         put.add(VariantToHBaseConverter.COLUMN_FAMILY, Bytes.toBytes(prefix + "format"), Bytes.toBytes(object.getFormat()));
 
         // Samples
-        if (samples != null && !samples.isEmpty()) {
+        if (includeSamples) {
             for (String sampleName : object.getSampleNames()) {
                 VariantProtos.VariantSample sampleProto = buildSampleProto(object, sampleName);
                 put.add(VariantToHBaseConverter.COLUMN_FAMILY, Bytes.toBytes(prefix + sampleName), sampleProto.toByteArray());

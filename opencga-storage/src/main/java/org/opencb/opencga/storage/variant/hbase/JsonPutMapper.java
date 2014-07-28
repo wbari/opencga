@@ -24,8 +24,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class JsonPutMapper extends Mapper<LongWritable, Text, ImmutableBytesWritable, Put> {
 
-    private VariantToHBaseConverter converter;
+    private VariantToHBaseConverter variantConverter;
+    private ArchivedVariantFileToHbaseConverter archivedVariantFileConverter;
+    
     protected ObjectMapper jsonObjectMapper;
+    
     
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
@@ -34,17 +37,24 @@ public class JsonPutMapper extends Mapper<LongWritable, Text, ImmutableBytesWrit
         jsonObjectMapper.addMixInAnnotations(Genotype.class, GenotypeJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(VariantStats.class, VariantStatsJsonMixin.class);
         
-        // TODO Get 'includeSamples', 'includeStats' and 'includeEffect' configuration
-        converter = new VariantToHBaseConverter();
+        setConverters(context.getConfiguration().getBoolean("includeStats", false), 
+                context.getConfiguration().getBoolean("includeSamples", false), 
+                context.getConfiguration().getBoolean("includeEffect", false));
     }
 
-    
     @Override
     protected void map(LongWritable key, Text txt, Context context) throws IOException, InterruptedException {
         Variant variant = jsonObjectMapper.readValue(txt.toString(), Variant.class);
-        Put put = converter.convertToStorageType(variant);
+        Put put = variantConverter.convertToStorageType(variant);
         ImmutableBytesWritable bytes = new ImmutableBytesWritable(put.getRow());
         context.write(bytes, put);
+    }
+    
+    private void setConverters(boolean includeStats, boolean includeSamples, boolean includeEffect) {
+        // TODO Support effect serialisation
+        archivedVariantFileConverter = new ArchivedVariantFileToHbaseConverter(
+                includeSamples, includeStats ? new VariantStatsToHbaseConverter() : null);
+        variantConverter = new VariantToHBaseConverter(archivedVariantFileConverter);
     }
     
 }
