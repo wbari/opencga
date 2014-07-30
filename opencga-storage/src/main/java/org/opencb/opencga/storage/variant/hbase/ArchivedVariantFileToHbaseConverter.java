@@ -96,6 +96,7 @@ public class ArchivedVariantFileToHbaseConverter implements ComplexTypeConverter
     private VariantProtos.VariantSample buildSampleProto(ArchivedVariantFile file, String sampleName) {
         String joinedSampleFields = VcfUtils.getJoinedSampleFields(file, sampleName);
         VariantProtos.VariantSample.Builder builder = VariantProtos.VariantSample.newBuilder();
+        builder.setGenotype(file.getSampleData(sampleName, "GT"));
         builder.setSample(joinedSampleFields);
         return builder.build();
     }
