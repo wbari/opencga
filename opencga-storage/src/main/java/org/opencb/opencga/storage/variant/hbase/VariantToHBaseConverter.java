@@ -3,8 +3,12 @@ package org.opencb.opencga.storage.variant.hbase;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -74,14 +78,23 @@ public class VariantToHBaseConverter implements ComplexTypeConverter<Variant, Pu
             for (ArchivedVariantFile archiveFile : v.getFiles().values()) {
                 Put filePut = archivedVariantFileConverter.convertToStorageType(archiveFile);
                 // Save the generated KeyValues into the Put object associated to the whole variant rowkey
-                for (Map.Entry<byte[],List<KeyValue>> keyValues : filePut.getFamilyMap().entrySet()) {
-                   for (KeyValue kv : keyValues.getValue()) {
-                       try {
-                           put.add(kv);
-                       } catch (IOException ex) {
-                           Logger.getLogger(VariantToHBaseConverter.class.getName()).log(Level.SEVERE, null, ex);
-                       }
-                   }
+                for (Map.Entry<byte[],List<Cell>> keyValues : filePut.getFamilyCellMap().entrySet()) {
+                	for(Cell c : keyValues.getValue()){
+                		try {
+                     	   KeyValue kvcopy = 
+                     			   new KeyValue(
+ 	                    			   put.getRow(), 
+ 	                    			   CellUtil.cloneFamily(c), 
+ 	                    			   CellUtil.cloneQualifier(c), 
+ 	                    			   c.getTimestamp(), 
+ 	                    			   KeyValue.Type.Put, 
+ 	                    			   CellUtil.cloneValue(c)
+                     				);
+                            put.add(kvcopy);
+                        } catch (IOException ex) {
+                            Logger.getLogger(VariantToHBaseConverter.class.getName()).log(Level.SEVERE, null, ex);
+                        }	
+                	}
                 }
             }
         }
