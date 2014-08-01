@@ -80,20 +80,7 @@ public class VariantToHBaseConverter implements ComplexTypeConverter<Variant, Pu
                 // Save the generated KeyValues into the Put object associated to the whole variant rowkey
                 for (Map.Entry<byte[],List<Cell>> keyValues : filePut.getFamilyCellMap().entrySet()) {
                 	for(Cell c : keyValues.getValue()){
-                		try {
-                     	   KeyValue kvcopy = 
-                     			   new KeyValue(
- 	                    			   put.getRow(), 
- 	                    			   CellUtil.cloneFamily(c), 
- 	                    			   CellUtil.cloneQualifier(c), 
- 	                    			   c.getTimestamp(), 
- 	                    			   KeyValue.Type.Put, 
- 	                    			   CellUtil.cloneValue(c)
-                     				);
-                            put.add(kvcopy);
-                        } catch (IOException ex) {
-                            Logger.getLogger(VariantToHBaseConverter.class.getName()).log(Level.SEVERE, null, ex);
-                        }	
+            			put.add(CellUtil.cloneFamily(c), CellUtil.cloneQualifier(c), CellUtil.cloneValue(c));
                 	}
                 }
             }
