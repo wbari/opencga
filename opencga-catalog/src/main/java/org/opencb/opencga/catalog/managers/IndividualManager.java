@@ -193,7 +193,7 @@ public class IndividualManager extends AbstractManager implements IIndividualMan
     public QueryResult<AnnotationSet> deleteAnnotation(int individualId, String annotationId, String sessionId)
             throws CatalogException {
         String userId = userDBAdaptor.getUserIdBySessionId(sessionId);
-        int studyId = sampleDBAdaptor.getStudyIdBySampleId(individualId);
+        int studyId = individualDBAdaptor.getStudyIdByIndividualId(individualId);
 
         authorizationManager.checkStudyPermission(studyId, userId, StudyPermission.MANAGE_SAMPLES);
 
