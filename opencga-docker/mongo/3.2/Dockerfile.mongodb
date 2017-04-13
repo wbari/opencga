@@ -1,0 +1,32 @@
+FROM ubuntu:xenial
+################ mongo ####################
+RUN groupadd -r mongodb -g 999 && useradd -r -g mongodb -u 999 mongodb
+
+ENV MONGO_MAJOR 3.2
+ENV MONGO_VERSION 3.2.12
+ENV UBUNTU_REL xenial
+
+# on major upgrades, get the new key from https://docs.mongodb.com/v$MONGO_MAJOR/tutorial/install-mongodb-on-ubuntu/
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 42F3E95A2C4F08279C4960ADD68FA50FEA312927 && \
+    echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu $UBUNTU_REL/mongodb-org/$MONGO_MAJOR multiverse" | tee /etc/apt/sources.list.d/mongodb-org-$MONGO_MAJOR.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends numactl \
+        mongodb-org-server=$MONGO_VERSION \
+        mongodb-org-shell=$MONGO_VERSION \
+        mongodb-org-tools=$MONGO_VERSION && \
+    echo "mongodb-org-server hold" | dpkg --set-selections && \
+    echo "mongodb-org-shell hold" | dpkg --set-selections && \
+    echo "mongodb-org-tools hold" | dpkg --set-selections && \
+    rm -rf /var/lib/apt/lists/* \
+        mv /etc/mongod.conf /etc/mongod.conf.orig
+
+COPY mongod.conf /etc/mongod.conf
+
+RUN chown -R mongodb:mongodb /var/lib/mongodb
+VOLUME /var/lib/mongodb
+
+EXPOSE 27017 28017
+
+# drop back to the regular user - good practice
+USER mongodb
+CMD ["mongod","-f","/etc/mongod.conf"]

@@ -1,0 +1,14 @@
+FROM  opencb/opencga_tomcat
+
+USER root
+
+# create opencga installation directory and copy binaries and configuration files from host
+WORKDIR  /opt/opencga
+RUN cp -a /appl/opencga/build/*  /opt/opencga/
+RUN cp /opt/opencga/opencga.war /opt/tomcat/webapps/opencga.war
+COPY configuration.yml /opt/opencga/conf/
+
+USER tomcat
+ENV OPENCGA_HOME=/opt/opencga
+USER root
+

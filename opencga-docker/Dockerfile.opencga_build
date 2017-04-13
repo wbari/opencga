@@ -1,0 +1,16 @@
+FROM  opencb/java8 
+
+# Install maven git and curl
+RUN apt-get update
+RUN apt-get install -y maven git curl
+RUN mvn -version
+WORKDIR /appl
+
+# clone git master branch
+RUN git clone -b master https://github.com/opencb/opencga.git 
+WORKDIR /appl/opencga
+RUN git pull origin master
+
+# compile 
+RUN mvn clean install -DskipTests -Dopencga.war.name=opencga
+RUN rm -fr ~/.m2

@@ -1,0 +1,16 @@
+FROM  opencb/opencga_deploy
+
+USER root
+
+WORKDIR $OPENCGA_HOME/bin
+
+# install catalog
+
+RUN ["/bin/bash", "-c", "./opencga-admin.sh catalog install -p <<< admin_P@ssword"]
+
+USER tomcat
+
+# start tomcat server 
+CMD ["catalina.sh", "run"]
+USER root
+

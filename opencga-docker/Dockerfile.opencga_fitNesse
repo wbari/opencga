@@ -1,0 +1,6 @@
+FROM  opencb/opencga_build
+
+WORKDIR /appl/opencga/build/test
+#CMD ["bin/opencga-fitnesse.sh -c "OpenCga.TestsSuits?suite&format=text"]
+EXPOSE 7070
+CMD ["bin/opencga-fitnesse.sh"]
