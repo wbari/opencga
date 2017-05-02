@@ -30,7 +30,6 @@ import org.opencb.opencga.analysis.execution.plugins.hist.VariantHistogramAnalys
 import org.opencb.opencga.analysis.execution.plugins.ibs.IbsAnalysis;
 import org.opencb.opencga.app.cli.analysis.options.VariantCommandOptions;
 import org.opencb.opencga.catalog.exceptions.CatalogException;
-import org.opencb.opencga.catalog.models.DataStore;
 import org.opencb.opencga.core.common.UriUtils;
 import org.opencb.opencga.storage.core.exceptions.StorageEngineException;
 import org.opencb.opencga.storage.core.exceptions.VariantSearchException;
@@ -38,7 +37,7 @@ import org.opencb.opencga.storage.core.manager.variant.VariantStorageManager;
 import org.opencb.opencga.storage.core.manager.variant.operations.StorageOperation;
 import org.opencb.opencga.storage.core.manager.variant.operations.VariantFileIndexerStorageOperation;
 import org.opencb.opencga.storage.core.variant.VariantStorageEngine;
-import org.opencb.opencga.storage.core.variant.adaptors.VariantDBAdaptor;
+import org.opencb.opencga.storage.core.variant.adaptors.VariantQueryParam;
 import org.opencb.opencga.storage.core.variant.analysis.VariantSampleFilter;
 import org.opencb.opencga.storage.core.variant.annotation.DefaultVariantAnnotationManager;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotationManager;
@@ -50,7 +49,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.opencb.opencga.storage.core.manager.variant.operations.VariantFileIndexerStorageOperation.LOAD;
 import static org.opencb.opencga.storage.core.manager.variant.operations.VariantFileIndexerStorageOperation.TRANSFORM;
 
@@ -118,20 +116,6 @@ public class VariantCommandExecutor extends AnalysisCommandExecutor {
         }
 
     }
-
-
-    private VariantStorageEngine initVariantStorageManager(DataStore dataStore)
-            throws CatalogException, IllegalAccessException, InstantiationException, ClassNotFoundException {
-
-        String storageEngine = dataStore.getStorageEngine();
-        if (isEmpty(storageEngine)) {
-            this.variantStorageEngine = storageEngineFactory.getVariantStorageEngine();
-        } else {
-            this.variantStorageEngine = storageEngineFactory.getVariantStorageEngine(storageEngine);
-        }
-        return variantStorageEngine;
-    }
-
 
     private void ibs() throws CatalogException, AnalysisExecutionException {
         VariantCommandOptions.VariantIbsCommandOptions cliOptions = variantCommandOptions.ibsVariantCommandOptions;
@@ -304,10 +288,10 @@ public class VariantCommandExecutor extends AnalysisCommandExecutor {
         VariantStorageManager variantManager = new VariantStorageManager(catalogManager, storageEngineFactory);
 
         Query query = new Query()
-                .append(VariantDBAdaptor.VariantQueryParams.REGION.key(), cliOptions.genericVariantAnnotateOptions.filterRegion)
-                .append(VariantDBAdaptor.VariantQueryParams.CHROMOSOME.key(), cliOptions.genericVariantAnnotateOptions.filterChromosome)
-                .append(VariantDBAdaptor.VariantQueryParams.GENE.key(), cliOptions.genericVariantAnnotateOptions.filterGene)
-                .append(VariantDBAdaptor.VariantQueryParams.ANNOT_CONSEQUENCE_TYPE.key(), cliOptions.genericVariantAnnotateOptions.filterAnnotConsequenceType);
+                .append(VariantQueryParam.REGION.key(), cliOptions.genericVariantAnnotateOptions.filterRegion)
+                .append(VariantQueryParam.CHROMOSOME.key(), cliOptions.genericVariantAnnotateOptions.filterChromosome)
+                .append(VariantQueryParam.GENE.key(), cliOptions.genericVariantAnnotateOptions.filterGene)
+                .append(VariantQueryParam.ANNOT_CONSEQUENCE_TYPE.key(), cliOptions.genericVariantAnnotateOptions.filterAnnotConsequenceType);
 
         QueryOptions options = new QueryOptions();
         options.put(VariantAnnotationManager.OVERWRITE_ANNOTATIONS, cliOptions.genericVariantAnnotateOptions.overwriteAnnotations);
@@ -334,10 +318,10 @@ public class VariantCommandExecutor extends AnalysisCommandExecutor {
         VariantSampleFilter variantSampleFilter = new VariantSampleFilter(variantManager.iterable(sessionId));
 
         if (StringUtils.isNotEmpty(cliOptions.samples)) {
-            query.append(VariantDBAdaptor.VariantQueryParams.RETURNED_SAMPLES.key(), Arrays.asList(cliOptions.samples.split(",")));
+            query.append(VariantQueryParam.RETURNED_SAMPLES.key(), Arrays.asList(cliOptions.samples.split(",")));
         }
         if (StringUtils.isNotEmpty(cliOptions.study)) {
-            query.append(VariantDBAdaptor.VariantQueryParams.STUDIES.key(), cliOptions.study);
+            query.append(VariantQueryParam.STUDIES.key(), cliOptions.study);
         }
 
         List<String> genotypes = Arrays.asList(cliOptions.genotypes.split(","));
