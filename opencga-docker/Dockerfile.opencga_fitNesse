@@ -1,6 +1,8 @@
 FROM  opencb/opencga_build
 
 WORKDIR /appl/opencga/build/test
+RUN sed -i 's/opencga-1.0.0-final/opencga/' fitnesse/FitNesseRoot/OpenCga/TestsSuits/SuiteSetUp/content.txt
+RUN sed -i 's/bioinfoint.hpc.cam.ac.uk/172.18.0.5:8080/' fitnesse/FitNesseRoot/OpenCga/TestsSuits/SuiteSetUp/content.txt
 #CMD ["bin/opencga-fitnesse.sh -c "OpenCga.TestsSuits?suite&format=text"]
 EXPOSE 7070
 CMD ["bin/opencga-fitnesse.sh"]

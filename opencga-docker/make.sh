@@ -45,7 +45,7 @@ sudo docker build -t opencb/opencga_build      -f Dockerfile.opencga_build      
 sudo docker build -t opencb/opencga_tomcat     -f Dockerfile.opencga_tomcat                              .  --no-cache=$NO_CACHE
 sudo docker build -t opencb/opencga_deploy     -f Dockerfile.opencga_deploy                              .  --no-cache=$NO_CACHE
 sudo docker build -t opencb/opencga_install    -f Dockerfile.opencga_install --network opencga-network   .  --no-cache=$NO_CACHE
-#sudo docker build -t opencb/opencga_fitnesse   -f Dockerfile.opencga_fitNesse                            .  --no-cache=$NO_CACHE
+sudo docker build -t opencb/opencga_fitnesse   -f Dockerfile.opencga_fitNesse                            .  --no-cache=$NO_CACHE
 
 sudo docker stop opencga
 sudo docker stop fitnesse
@@ -54,5 +54,6 @@ sudo docker rm   opencga
 sudo docker rm   fitnesse 
 
 sudo docker run --name opencga --net opencga-network --ip 172.18.0.5 -d opencb/opencga_install
-sudo docker run --name fitnesse -w /appl/opencga/build/test --net opencga-network --ip 172.18.0.9 -d opencb/opencga_build bin/opencga-fitnesse.sh
+sudo docker run --name fitnesse --net opencga-network --ip 172.18.0.9 -d opencb/opencga_fitnesse 
+#sudo docker run --name fitnesse -w /appl/opencga/build/test --net opencga-network --ip 172.18.0.9 -d opencb/opencga_fitnesse bin/opencga-fitnesse.sh
  
