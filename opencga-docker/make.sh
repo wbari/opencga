@@ -31,7 +31,7 @@ elif [ ! -z "$2" ]
 	MONGO_VERSION="$2"
 fi
 
-docker network create  --subnet 172.18.0.0/24 opencga-network
+sudo docker network create  --subnet 172.18.0.0/24 opencga-network
 
 sudo docker build -t opencb/mongodb            -f mongo/$MONGO_VERSION/Dockerfile.mongodb                .  --no-cache=$NO_CACHE 
 
