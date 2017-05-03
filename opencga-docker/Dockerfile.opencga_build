@@ -3,7 +3,6 @@ FROM  opencb/java8
 # Install maven git and curl
 RUN apt-get update
 RUN apt-get install -y maven git curl
-RUN mvn -version
 WORKDIR /appl
 
 # clone git master branch
