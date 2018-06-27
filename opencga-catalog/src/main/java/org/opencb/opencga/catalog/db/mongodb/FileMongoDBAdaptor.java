@@ -26,10 +26,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.*;
+import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBQueryUtils;
 import org.opencb.opencga.catalog.db.api.DBIterator;
@@ -49,6 +47,7 @@ import org.opencb.opencga.core.models.Status;
 import org.opencb.opencga.core.models.acls.permissions.FileAclEntry;
 import org.opencb.opencga.core.models.acls.permissions.SampleAclEntry;
 import org.opencb.opencga.core.models.acls.permissions.StudyAclEntry;
+import org.opencb.opencga.core.models.stats.FileStats;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
@@ -59,6 +58,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.mongodb.client.model.Aggregates.bucketAuto;
+import static com.mongodb.client.model.Aggregates.project;
+import static com.mongodb.client.model.Projections.*;
 import static org.opencb.opencga.catalog.db.mongodb.AuthorizationMongoDBUtils.filterAnnotationSets;
 import static org.opencb.opencga.catalog.db.mongodb.AuthorizationMongoDBUtils.getQueryForAuthorisedEntries;
 import static org.opencb.opencga.catalog.db.mongodb.MongoDBUtils.*;
@@ -85,7 +87,6 @@ public class FileMongoDBAdaptor extends MongoDBAdaptor implements FileDBAdaptor 
     }
 
     /**
-     *
      * @return MongoDB connection to the file collection.
      */
     public MongoDBCollection getFileCollection() {
@@ -237,7 +238,7 @@ public class FileMongoDBAdaptor extends MongoDBAdaptor implements FileDBAdaptor 
 
         String[] acceptedParams = {
                 QueryParams.DESCRIPTION.key(), QueryParams.URI.key(), QueryParams.CREATION_DATE.key(),
-                QueryParams.MODIFICATION_DATE.key(), QueryParams.PATH.key(), };
+                QueryParams.MODIFICATION_DATE.key(), QueryParams.PATH.key()};
         // Fixme: Add "name", "path" and "ownerId" at some point. At the moment, it would lead to inconsistencies.
         filterStringParams(parameters, document.getSet(), acceptedParams);
 
@@ -431,7 +432,7 @@ public class FileMongoDBAdaptor extends MongoDBAdaptor implements FileDBAdaptor 
         StudyAclEntry.StudyPermissions studyPermission = (studyPermissions == null
                 ? StudyAclEntry.StudyPermissions.VIEW_FILES : studyPermissions);
 
-           // Get the study document
+        // Get the study document
         Query studyQuery = new Query(StudyDBAdaptor.QueryParams.UID.key(), query.getLong(QueryParams.STUDY_UID.key()));
         QueryResult queryResult = dbAdaptorFactory.getCatalogStudyDBAdaptor().nativeGet(studyQuery, QueryOptions.empty());
         if (queryResult.getNumResults() == 0) {
@@ -891,5 +892,39 @@ public class FileMongoDBAdaptor extends MongoDBAdaptor implements FileDBAdaptor 
     @Override
     public void unmarkPermissionRule(long studyId, String permissionRuleId) throws CatalogException {
         unmarkPermissionRule(fileCollection, studyId, permissionRuleId);
+    }
+
+    @Override
+    public FileStats createStats(String studyId) throws CatalogDBException {
+        //createStats();
+        List<Bson> operations = new ArrayList<>();
+        //Bson projection = project(fields(include("id"), excludeId(), computed("count", Projections.computed("$size", "$samples"))));
+        operations.add(Aggregates.facet(
+                new Facet("bucketsBySamples",
+                        project(fields(include("id"), excludeId(), computed("count",
+                                Projections.computed("$size", "$samples")))),
+                        bucketAuto("$count", 5, new BucketAutoOptions())))
+        );
+
+/*
+        QueryResult<Document> aggregate = dbAdaptorFactory.getCatalogFileDBAdaptor().getFileCollection()
+                .aggregate(operations, null);
+        System.out.println(aggregate.getResult());
+*/
+
+        MongoCursor<Document> res = fileCollection.nativeQuery().aggregate(operations, null).iterator();
+        Document document = res.next();
+        System.out.println(document);
+
+        //        GenericDocumentComplexConverter<FileStats> converter = new GenericDocumentComplexConverter<>(FileStats.class);
+//        FileStats fileStats = converter.convertToDataModelType(document);
+
+        // Mapping ???
+        return new FileStats();
+    }
+
+    @Override
+    public FileStats getStats(String studyId) throws CatalogDBException {
+        return new FileStats();
     }
 }

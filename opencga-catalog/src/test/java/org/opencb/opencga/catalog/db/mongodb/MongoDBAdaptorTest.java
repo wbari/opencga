@@ -94,13 +94,14 @@ public class MongoDBAdaptorTest extends GenericTest {
             database = "opencga_test_catalog";
         }
 
+        database = "opencga_catalog";
         /**
          * Database is cleared before each execution
          */
 //        clearDB(dataStoreServerAddress, mongoCredentials);
         MongoDataStoreManager mongoManager = new MongoDataStoreManager(dataStoreServerAddress.getHost(), dataStoreServerAddress.getPort());
         MongoDataStore db = mongoManager.get(database);
-        db.getDb().drop();
+        //db.getDb().drop();
 
         catalogDBAdaptor = new MongoDBAdaptorFactory(Collections.singletonList(dataStoreServerAddress), mongoDBConfiguration,
                 database);
@@ -111,7 +112,7 @@ public class MongoDBAdaptorTest extends GenericTest {
         catalogJobDBAdaptor = catalogDBAdaptor.getCatalogJobDBAdaptor();
         catalogIndividualDBAdaptor = catalogDBAdaptor.getCatalogIndividualDBAdaptor();
         catalogPanelDBAdaptor = catalogDBAdaptor.getCatalogPanelDBAdaptor();
-        initDefaultCatalogDB();
+        //initDefaultCatalogDB();
     }
 
     public void initDefaultCatalogDB() throws CatalogException {

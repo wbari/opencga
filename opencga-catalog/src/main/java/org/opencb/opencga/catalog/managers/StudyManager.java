@@ -41,6 +41,8 @@ import org.opencb.opencga.core.config.Configuration;
 import org.opencb.opencga.core.models.*;
 import org.opencb.opencga.core.models.acls.AclParams;
 import org.opencb.opencga.core.models.acls.permissions.*;
+import org.opencb.opencga.core.models.stats.FileStats;
+import org.opencb.opencga.core.models.stats.StudyStats;
 import org.opencb.opencga.core.models.summaries.StudySummary;
 import org.opencb.opencga.core.models.summaries.VariableSetSummary;
 import org.opencb.opencga.core.models.summaries.VariableSummary;
@@ -65,7 +67,7 @@ public class StudyManager extends AbstractManager {
 
     private static final String MEMBERS = "@members";
     private static final String ADMINS = "@admins";
-//[A-Za-z]([-_.]?[A-Za-z0-9]
+    //[A-Za-z]([-_.]?[A-Za-z0-9]
     private static final String USER_PATTERN = "[A-Za-z][[-_.]?[A-Za-z0-9]?]*";
     private static final String PROJECT_PATTERN = "[A-Za-z0-9][[-_.]?[A-Za-z0-9]?]*";
     private static final String STUDY_PATTERN = "[A-Za-z0-9\\-_.]+|\\*";
@@ -1262,5 +1264,19 @@ public class StudyManager extends AbstractManager {
             return StringUtils.split(study.getFqn(), "@")[0];
         }
         return studyDBAdaptor.getOwnerId(study.getUid());
+    }
+
+    public boolean createStats(String studyId) throws CatalogDBException {
+        StudyStats studyStats = new StudyStats();
+        FileStats fileStats = catalogManager.getFileManager().createStats(studyId);
+        //Chort
+        // ....
+        //combine
+        return true;
+    }
+
+    public StudyStats getStats(String studyId) {
+
+        return new StudyStats();
     }
 }

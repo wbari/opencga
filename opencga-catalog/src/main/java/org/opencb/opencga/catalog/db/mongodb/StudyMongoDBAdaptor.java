@@ -43,6 +43,7 @@ import org.opencb.opencga.core.common.TimeUtils;
 import org.opencb.opencga.core.models.*;
 import org.opencb.opencga.core.models.Variable;
 import org.opencb.opencga.core.models.acls.permissions.StudyAclEntry;
+import org.opencb.opencga.core.models.stats.StudyStats;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
@@ -52,6 +53,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.mongodb.client.model.Accumulators.sum;
+import static com.mongodb.client.model.Aggregates.*;
+import static com.mongodb.client.model.Projections.*;
 import static org.opencb.opencga.catalog.db.mongodb.AuthorizationMongoDBUtils.checkCanViewStudy;
 import static org.opencb.opencga.catalog.db.mongodb.AuthorizationMongoDBUtils.checkStudyPermission;
 import static org.opencb.opencga.catalog.db.mongodb.MongoDBUtils.*;
@@ -281,7 +285,7 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
 
         List<Bson> operations = new ArrayList<>();
         operations.add(Aggregates.match(Filters.eq(PRIVATE_STUDY_ID, studyId)));
-        operations.add(Aggregates.group("$" + PRIVATE_STUDY_ID, Accumulators.sum("size", "$diskUsage")));
+        operations.add(Aggregates.group("$" + PRIVATE_STUDY_ID, sum("size", "$diskUsage")));
 
         QueryResult<Document> aggregate = dbAdaptorFactory.getCatalogFileDBAdaptor().getFileCollection()
                 .aggregate(operations, null);
@@ -310,8 +314,8 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
 
         List<Bson> aggregation = new ArrayList<>();
         aggregation.add(Aggregates.match(Filters.eq(PRIVATE_UID, studyId)));
-        aggregation.add(Aggregates.project(Projections.include(QueryParams.GROUPS.key())));
-        aggregation.add(Aggregates.unwind("$" + QueryParams.GROUPS.key()));
+        aggregation.add(Aggregates.project(include(QueryParams.GROUPS.key())));
+        aggregation.add(unwind("$" + QueryParams.GROUPS.key()));
 
         if (userIds.size() > 0) {
             aggregation.add(Aggregates.match(Filters.in(QueryParams.GROUP_USER_IDS.key(), userIds)));
@@ -577,8 +581,8 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
         List<Bson> aggregation = new ArrayList<>();
         aggregation.add(Aggregates.match(Filters.elemMatch(QueryParams.VARIABLE_SET.key(),
                 Filters.eq(VariableSetParams.UID.key(), variableSetId))));
-        aggregation.add(Aggregates.project(Projections.include(QueryParams.VARIABLE_SET.key())));
-        aggregation.add(Aggregates.unwind("$" + QueryParams.VARIABLE_SET.key()));
+        aggregation.add(Aggregates.project(include(QueryParams.VARIABLE_SET.key())));
+        aggregation.add(unwind("$" + QueryParams.VARIABLE_SET.key()));
         aggregation.add(Aggregates.match(Filters.eq(QueryParams.VARIABLE_SET_UID.key(), variableSetId)));
         QueryResult<VariableSet> queryResult = studyCollection.aggregate(aggregation, variableSetConverter, new QueryOptions());
 
@@ -699,7 +703,7 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
         QueryResult<UpdateResult> queryResult = studyCollection.update(bsonQuery, update, null);
         if (queryResult.first().getModifiedCount() != 1) {
             throw new CatalogDBException("Remove field from Variable Set. Could not remove the field " + name
-                    + " from the variableSet id " +  variableSetId);
+                    + " from the variableSet id " + variableSetId);
         }
 
         // Remove all the annotations from that field
@@ -722,8 +726,9 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
 
     /**
      * Checks if the variable given is present in the variableSet.
+     *
      * @param variableSet Variable set.
-     * @param variableId VariableId that will be checked.
+     * @param variableId  VariableId that will be checked.
      * @throws CatalogDBException when the variableId is not present in the variableSet.
      */
     private void checkVariableInVariableSet(VariableSet variableSet, String variableId) throws CatalogDBException {
@@ -735,8 +740,9 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
 
     /**
      * Checks if the variable given is not present in the variableSet.
+     *
      * @param variableSet Variable set.
-     * @param variableId VariableId that will be checked.
+     * @param variableId  VariableId that will be checked.
      * @throws CatalogDBException when the variableId is present in the variableSet.
      */
     private void checkVariableNotInVariableSet(VariableSet variableSet, String variableId) throws CatalogDBException {
@@ -751,7 +757,7 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
         long startTime = startQuery();
 
         Query query = new Query(QueryParams.VARIABLE_SET_UID.key(), variableSetId);
-        Bson projection = Projections.elemMatch("variableSets", Filters.eq(PRIVATE_UID, variableSetId));
+        Bson projection = elemMatch("variableSets", Filters.eq(PRIVATE_UID, variableSetId));
         if (options == null) {
             options = new QueryOptions();
         }
@@ -837,8 +843,8 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
 
         List<Bson> aggregation = new ArrayList<>();
         aggregation.add(Aggregates.match(Filters.eq(PRIVATE_UID, studyId)));
-        aggregation.add(Aggregates.project(Projections.include("variableSets")));
-        aggregation.add(Aggregates.unwind("$variableSets"));
+        aggregation.add(Aggregates.project(include("variableSets")));
+        aggregation.add(unwind("$variableSets"));
         if (mongoQueryList.size() > 0) {
             List<Bson> bsonList = new ArrayList<>(mongoQueryList.size());
             bsonList.addAll(mongoQueryList);
@@ -894,7 +900,7 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
 
         List<Bson> aggregation = new ArrayList<>();
         aggregation.add(Aggregates.match(Filters.eq(PRIVATE_UID, studyId)));
-        aggregation.add(Aggregates.unwind("$variableSets"));
+        aggregation.add(unwind("$variableSets"));
         if (mongoQueryList.size() > 0) {
             List<Bson> bsonList = new ArrayList<>(mongoQueryList.size());
             bsonList.addAll(mongoQueryList);
@@ -991,7 +997,7 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
     public long getStudyIdByVariableSetId(long variableSetId) throws CatalogDBException {
 //        DBObject query = new BasicDBObject("variableSets.id", variableSetId);
         Bson query = Filters.eq("variableSets." + PRIVATE_UID, variableSetId);
-        Bson projection = Projections.include(PRIVATE_UID);
+        Bson projection = include(PRIVATE_UID);
 
 //        QueryResult<DBObject> queryResult = studyCollection.find(query, new BasicDBObject(PRIVATE_UID, true), null);
         QueryResult<Document> queryResult = studyCollection.find(query, projection, null);
@@ -1169,7 +1175,7 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
         Document studyParameters = new Document();
 
         String[] acceptedParams = {QueryParams.NAME.key(), QueryParams.CREATION_DATE.key(), QueryParams.DESCRIPTION.key(),
-                QueryParams.CIPHER.key(), };
+                QueryParams.CIPHER.key()};
         filterStringParams(parameters, studyParameters, acceptedParams);
 
         String[] acceptedLongParams = {QueryParams.SIZE.key()};
@@ -1618,8 +1624,8 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
                                 && query.getString(QueryParams.ID.key()).equals(query.getString(QueryParams.ALIAS.key()))) {
                             if (!idOrAliasFlag) {
                                 List<Document> orList = Arrays.asList(
-                                    new Document(QueryParams.ID.key(), query.getString(QueryParams.ID.key())),
-                                    new Document(QueryParams.ALIAS.key(), query.getString(QueryParams.ALIAS.key()))
+                                        new Document(QueryParams.ID.key(), query.getString(QueryParams.ID.key())),
+                                        new Document(QueryParams.ALIAS.key(), query.getString(QueryParams.ALIAS.key()))
                                 );
                                 andBsonList.add(new Document("$or", orList));
                                 idOrAliasFlag = true;
@@ -1696,4 +1702,15 @@ public class StudyMongoDBAdaptor extends MongoDBAdaptor implements StudyDBAdapto
                     + " the study " + studyId);
         }
     }
+
+    public StudyStats createStudyStats(String studyId) {
+        StudyStats studyStats = new StudyStats();
+
+        return studyStats;
+    }
+
+    public StudyStats getStudyStats(String studyId) {
+        return new StudyStats();
+    }
+
 }

@@ -24,6 +24,7 @@ import org.opencb.opencga.catalog.exceptions.CatalogDBException;
 import org.opencb.opencga.catalog.exceptions.CatalogException;
 import org.opencb.opencga.core.models.File;
 import org.opencb.opencga.core.models.Sample;
+import org.opencb.opencga.core.models.stats.FileStats;
 
 import java.util.HashMap;
 import java.util.List;
@@ -89,6 +90,7 @@ public interface FileDBAdaptor extends DBAdaptor<File> {
 
         // Fixme: Index attributes
         private static Map<String, QueryParams> map = new HashMap<>();
+
         static {
             for (QueryParams param : QueryParams.values()) {
                 map.put(param.key(), param);
@@ -211,7 +213,7 @@ public interface FileDBAdaptor extends DBAdaptor<File> {
     /**
      * Extract the sampleIds given from the files that matching the query.
      *
-     * @param query query.
+     * @param query     query.
      * @param sampleIds sample ids.
      * @return A queryResult object containing the number of files matching the query.
      * @throws CatalogDBException CatalogDBException.
@@ -221,7 +223,7 @@ public interface FileDBAdaptor extends DBAdaptor<File> {
     /**
      * Add the samples to the array of samples in the file entry.
      *
-     * @param fileId file id corresponding to the file being updated.
+     * @param fileId  file id corresponding to the file being updated.
      * @param samples List of samples to be added to the array.
      * @throws CatalogDBException CatalogDBException.
      */
@@ -231,10 +233,12 @@ public interface FileDBAdaptor extends DBAdaptor<File> {
      * Removes the mark of the permission rule (if existed) from all the entries from the study to notify that permission rule would need to
      * be applied.
      *
-     * @param studyId study id containing the entries affected.
+     * @param studyId          study id containing the entries affected.
      * @param permissionRuleId permission rule id to be unmarked.
      * @throws CatalogException if there is any database error.
      */
     void unmarkPermissionRule(long studyId, String permissionRuleId) throws CatalogException;
 
+    FileStats createStats(String studyId) throws CatalogDBException;
+    FileStats getStats(String studyId) throws CatalogDBException;
 }

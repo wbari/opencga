@@ -45,6 +45,7 @@ public class StudyMongoDBAdaptorTest extends MongoDBAdaptorTest {
         assertEquals(1900, catalogStudyDBAdaptor.get(5, null).getResult().get(0).getSize());
     }
 
+
     /***
      * The test will check whether it is possible to create a new study using an alias that is already being used, but on a different
      * project.
@@ -127,6 +128,7 @@ public class StudyMongoDBAdaptorTest extends MongoDBAdaptorTest {
 
     /**
      * Creates a new variable once and attempts to create the same one again.
+     *
      * @throws CatalogDBException
      */
     @Test
@@ -149,6 +151,7 @@ public class StudyMongoDBAdaptorTest extends MongoDBAdaptorTest {
 
     /**
      * Tries to add a new variable to a non existent variableSet.
+     *
      * @throws CatalogDBException
      */
     @Test
@@ -174,10 +177,10 @@ public class StudyMongoDBAdaptorTest extends MongoDBAdaptorTest {
         catalogStudyDBAdaptor.createGroup(5L, new Group("name2", Arrays.asList("user1", "user2", "user3")));
         catalogStudyDBAdaptor.createGroup(5L, new Group("name3", Arrays.asList("user1", "user3")));
 
-        QueryResult<Group> group = catalogStudyDBAdaptor.getGroup(5L, null,  Arrays.asList("user1", "user3"));
+        QueryResult<Group> group = catalogStudyDBAdaptor.getGroup(5L, null, Arrays.asList("user1", "user3"));
         assertEquals(3, group.getNumResults());
         catalogStudyDBAdaptor.removeUsersFromAllGroups(5L, Arrays.asList("user1", "user3"));
-        group = catalogStudyDBAdaptor.getGroup(5L, null,  Arrays.asList("user1", "user3"));
+        group = catalogStudyDBAdaptor.getGroup(5L, null, Arrays.asList("user1", "user3"));
         assertEquals(0, group.getNumResults());
     }
 

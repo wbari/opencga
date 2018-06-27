@@ -51,6 +51,7 @@ import org.opencb.opencga.core.config.Configuration;
 import org.opencb.opencga.core.models.*;
 import org.opencb.opencga.core.models.acls.permissions.FileAclEntry;
 import org.opencb.opencga.core.models.acls.permissions.StudyAclEntry;
+import org.opencb.opencga.core.models.stats.FileStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -925,10 +926,10 @@ public class FileManager extends ResourceManager<File> {
      * - Status -> PENDING_DELETE
      * - Path -> Renamed to {path}__DELETED_{time}
      * - URI -> File or folder name from the file system renamed to {name}__DELETED_{time}
-     *          URI in the database updated accordingly
+     * URI in the database updated accordingly
      *
      * @param studyId study id.
-     * @param file file or folder.
+     * @param file    file or folder.
      * @return a WriteResult object.
      */
     private WriteResult physicalDelete(long studyId, File file, boolean forceDelete) throws CatalogException {
@@ -1898,10 +1899,10 @@ public class FileManager extends ResourceManager<File> {
                         .map(String::valueOf)
                         .collect(Collectors.toList());
                 return authorizationManager.setAcls(resource.getStudy().getUid(), resource.getResourceList().stream().map(File::getUid)
-                                .collect(Collectors.toList()), members, permissions, allFilePermissions, Entity.FILE);
+                        .collect(Collectors.toList()), members, permissions, allFilePermissions, Entity.FILE);
             case ADD:
                 return authorizationManager.addAcls(resource.getStudy().getUid(), resource.getResourceList().stream().map(File::getUid)
-                                .collect(Collectors.toList()), members, permissions, Entity.FILE);
+                        .collect(Collectors.toList()), members, permissions, Entity.FILE);
             case REMOVE:
                 return authorizationManager.removeAcls(resource.getResourceList().stream().map(File::getUid).collect(Collectors.toList()),
                         members, permissions, Entity.FILE);
@@ -2148,11 +2149,11 @@ public class FileManager extends ResourceManager<File> {
     /**
      * Method to check if a files matching a query can be deleted. It will only be possible to delete files as long as they are not indexed.
      *
-     * @param query Query object.
+     * @param query          Query object.
      * @param physicalDelete boolean indicating whether the files matching the query should be completely deleted from the file system or
      *                       they should be sent to the trash bin.
-     * @param studyId Study where the query will be applied.
-     * @param userId user for which DELETE permissions will be checked.
+     * @param studyId        Study where the query will be applied.
+     * @param userId         user for which DELETE permissions will be checked.
      * @return the list of files scanned that can be deleted.
      * @throws CatalogException if any of the files cannot be deleted.
      */
@@ -2797,5 +2798,13 @@ public class FileManager extends ResourceManager<File> {
         fileQueryResult = fileDBAdaptor.count(query);
 
         return fileQueryResult.first() > 0 ? CheckPath.DIRECTORY_EXISTS : CheckPath.FREE_PATH;
+    }
+
+    public FileStats createStats(String studyId) throws CatalogDBException {
+        return fileDBAdaptor.createStats(studyId);
+    }
+
+    public FileStats getStats(String studyId) throws CatalogDBException {
+        return fileDBAdaptor.getStats(studyId);
     }
 }
