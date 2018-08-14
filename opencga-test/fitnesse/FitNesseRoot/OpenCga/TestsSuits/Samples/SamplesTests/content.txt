@@ -64,15 +64,15 @@
 
 !3 Get Sample 
 !|Table: Rest Fixture | $baseURL |
-| GET | /v1/samples/$sampleId/info?sid=$sessionId|200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].id == '$sampleId'|
+| GET | /v1/samples/$sampleId/info?sid=$sessionId&study=$study|200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].id == '$sampleId'|
 
 !3 Get Sample Including Individual
 !|Table: Rest Fixture | $baseURL |
-| GET | /v1/samples/$sampleId2/info?sid=$sessionId&includeIndividual=true|200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].id == '$sampleId2' && jsonbody.response[0].result[0].attributes.individual.id == '$individualId'|
+| GET | /v1/samples/$sampleId2/info?sid=$sessionId&includeIndividual=true&study=$study|200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].id == '$sampleId2' && jsonbody.response[0].result[0].attributes.individual.id == '$individualId'|
 
 !3 Get Individual 
 !|Table: Rest Fixture | $baseURL |
-| GET | /v1/individuals/$individualId/info?sid=$sessionId|200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].id == '$individualId'|
+| GET | /v1/individuals/$individualId/info?sid=$sessionId&study=$study|200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].id == '$individualId'|
 
 !3 Get Multiple Samples
 !|Table: Rest Fixture | $baseURL |
@@ -94,20 +94,19 @@
 !|Table: Rest Fixture | $baseURL |
 | setBody | {"name" : "newName" }|
 | setHeader|Content-Type:application/json|
-| POST | /v1/samples/$sampleId/update?sid=$sessionId&incVersion=false |200|  Content-Type: application/json ||
-#| POST | /v1/samples/$sampleId/update?sid=$sessionId&incVersion=false |200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].name == 'newName'|
+| POST | /v1/samples/$sampleId/update?sid=$sessionId&incVersion=false |200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].name == 'newName'|
 
 !3 Update Sample With Version Increment
 !|Table: Rest Fixture | $baseURL |
 | setBody | {"name" : "$updatedName" }|
 | setHeader|Content-Type:application/json|
-| POST | /v1/samples/$sampleId/update?sid=$sessionId&incVersion=true |200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].name == '$updatedName' && jsonbody.response[0].result[0].version == '2'|
+| POST | /v1/samples/$sampleId/update?sid=$sessionId&incVersion=true&study=$study |200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].name == '$updatedName' && jsonbody.response[0].result[0].version == '2'|
 
 !3 Update Only Sample Version
 !|Table: Rest Fixture | $baseURL |
 | setBody | {}|
 | setHeader|Content-Type:application/json|
-| POST | /v1/samples/$sampleId/update?sid=$sessionId&incVersion=true |200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].version == '3'|
+| POST | /v1/samples/$sampleId/update?sid=$sessionId&incVersion=true&study=$study |200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].version == '3'|
 
 !3 Get Sample Returns Latest Version
 !|Table: Rest Fixture | $baseURL |
@@ -115,11 +114,11 @@
 
 !3 Search Sample Returns Latest Version
 !|Table: Rest Fixture | $baseURL |
-| GET | /v1/samples/search?sid=$sessionId&name=$updatedName&study=$study|200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].name == '$updatedName' && jsonbody.response[0].result[0].version == '3'|
+| GET | /v1/samples/search?sid=$sessionId&name=$updatedName&study=$study&study=$study|200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].name == '$updatedName' && jsonbody.response[0].result[0].version == '3'|
 
 !3 Get Sample (All Versions)
 !|Table: Rest Fixture | $baseURL |
-| GET | /v1/samples/$sampleId/info?sid=$sessionId&allVersions=true|200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result.length == 3|
+| GET | /v1/samples/$sampleId/info?sid=$sessionId&allVersions=true&study=$study|200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result.length == 3|
 
 !3 Get Samples as Groups
 !|Table: Rest Fixture | $baseURL |
@@ -133,7 +132,7 @@
 !|Table: Rest Fixture | $baseURL |
 | setBody | {  "permissions" : "VIEW_SAMPLES",  "action": "SET",  "study": "$studyId"}|
 | setHeader|Content-Type:application/json|
-| POST | /v1/studies/acl/*/update?sid=$sessionId|200|Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].permissions[0] == 'VIEW_SAMPLES'|
+| POST | /v1/studies/acl/*/update?sid=$sessionId&study=$study|200|Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].permissions[0] == 'VIEW_SAMPLES'|
 
 !3 Get Sample As Ananomous
 !|Table: Rest Fixture | $baseURL |
@@ -143,7 +142,7 @@
 !|Table: Rest Fixture | $baseURL |
 | setBody | {  "permissions" : "VIEW_SAMPLES",  "action": "REMOVE",  "study": "$studyId"}|
 | setHeader|Content-Type:application/json|
-| POST | /v1/studies/acl/*/update?sid=$sessionId|200|Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].permissions.length == '0.0'|
+| POST | /v1/studies/acl/*/update?sid=$sessionId&study=$study|200|Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].permissions.length == '0.0'|
 
 !3 Get Sample As Ananomous
 !|Table: Rest Fixture | $baseURL |
@@ -153,7 +152,7 @@
 !|Table: Rest Fixture | $baseURL |
 |setBody|{"permissions": "VIEW", "action":"SET", "sample": "$sampleId"}|
 |setHeader|Content-Type:application/json|
-|POST| /v1/samples/acl/*/update?sid=$sessionId |200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].permissions[0] == 'VIEW'|
+|POST| /v1/samples/acl/*/update?sid=$sessionId&study=$study |200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].result[0].permissions[0] == 'VIEW'|
 
 !3 Get Sample As Ananomous
 !|Table: Rest Fixture | $baseURL |
