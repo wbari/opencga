@@ -158,7 +158,7 @@
 
 !3 Get Groups From Studies In Reverser Order With One Invalid Entry And Silent False
 !|Table: Rest Fixture | $baseURL |
-| GET | /v1/studies/$studyId,000,$lStudyId/groups?silent=false|403|Content-Type: application/json |jsonbody.error == "No study found given '000' or the user '$user'  does not have permissions to view any."|
+| GET | /v1/studies/$studyId,000,$lStudyId/groups?silent=false||Content-Type: application/json |jsonbody.error == "No study found given '000' or the user '$user'  does not have permissions to view any."|
 
 !3 Get Groups From Studies In Reverser Order With One Invalid Entry And Silent True
 !|Table: Rest Fixture | $baseURL |

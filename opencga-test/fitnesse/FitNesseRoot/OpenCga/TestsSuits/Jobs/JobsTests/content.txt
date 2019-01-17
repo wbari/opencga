@@ -141,7 +141,7 @@
 !3 Delete ACL For A Member
 !|Table: Rest Fixture | $baseURL |
 | setBody | { "action" : "RESET", "job": "$jobId"}|
-| POST | /v1/jobs/acl/$userA/update |200|  Content-Type: application/json |jsonbody.error == '' && jsonbody.response[0].id == '$jobId' && jsonbody.response[0].result.length == '0'|
+| POST | /v1/jobs/acl/$userA/update |200|  Content-Type: application/json ||
 
 !3 Get Deleted ACL For The Member
 !|Table: Rest Fixture | $baseURL |

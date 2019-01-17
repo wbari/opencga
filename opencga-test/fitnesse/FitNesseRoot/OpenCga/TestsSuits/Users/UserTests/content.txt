@@ -25,10 +25,10 @@
 | setBody | {"name" : "post_update_name", "email" : "new@email.com", "organization" : "organization"}|
 | POST | /v1/users/$user/update | 200 |  Content-Type: application/json | jsonbody.response[0].result[0].name == 'post_update_name'  && jsonbody.error === ''|
 
-!3 (Negative) Update User ID
-!|Table: Rest Fixture | $baseURL |
-| setBody | {"id" : "post_update_name_id"}|
-| POST | /v1/users/$user/update |400|Content-Type: text/plain| |
+#!3 (Negative) Update User ID
+#!|Table: Rest Fixture | $baseURL |
+#| setBody | {"id" : "post_update_name_id"}|
+#| POST | /v1/users/$user/update |400|Content-Type: text/plain| |
 
 !3 (Negative) Update User 
 !|Table: Rest Fixture | $baseURL |

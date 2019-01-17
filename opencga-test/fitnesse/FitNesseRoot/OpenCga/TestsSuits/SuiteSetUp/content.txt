@@ -2,6 +2,7 @@
 !path target/appassembler/dependencies/*.jar
 !define OPENCGA_VERSION {opencga-1.4.0-rc3-dev}
 !define TEST_HOST {qa.opencb.org}
+!define ADMIN_PASSWORD {admin_P@ssword}
 !define VERSION {v1}
 
 !|import|
@@ -26,7 +27,7 @@
 
 !3 Login OpenCGA Root User 
 !|Table: Rest Fixture | $baseURL  |
-| setBody | {"password" : "admin_P@ssword"}|
+| setBody | {"password" : "${ADMIN_PASSWORD}"}|
 | setHeader|Content-Type:application/json|
 | POST | /v1/users/admin/login |200|  Content-Type: application/json ||
 |let|root|js|response.jsonbody.response[0].result[0].sessionId||

@@ -48,10 +48,10 @@
 | setBody |{"description" : "update"}|
 | POST | /v1/projects/$lProjectId/update |200|  Content-Type: application/json |jsonbody.response[0].result[0].description == 'update'|
 
-!3 (Negative) Update Project ID
-!|Table: Rest Fixture | $baseURL |
-| setBody |{"id" : "updatedID"}|
-| POST | /v1/projects/$lProjectId/update |400|Content-Type : text/plain||
+#!3 (Negative) Update Project ID
+#!|Table: Rest Fixture | $baseURL |
+#| setBody |{"id" : "updatedID"}|
+#| POST | /v1/projects/$lProjectId/update |400|Content-Type : text/plain||
 
 !3 (Negative) Update Project Mandatory Field ( Not Allowed)
 !|Table: Rest Fixture | $baseURL |
