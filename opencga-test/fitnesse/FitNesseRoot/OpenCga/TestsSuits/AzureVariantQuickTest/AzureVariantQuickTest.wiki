@@ -39,4 +39,4 @@ Authorization : Bearer $azureSessionId-!|
 !|Table: Rest Fixture | $baseURL |
 | setHeaders|!- Content-Type:application/json 
 Authorization : Bearer $azureSessionId-!|
-| GET | /v1/analysis/variant/query?histogram=false&interval=2000&study=$azurStudyId |500|  Content-Type: application/json |jsonbody.error === 'Study { name: \"$azureUser@$azureProject:$azureStudy\" } not found.' |
+| GET | /v1/analysis/variant/query?histogram=false&interval=2000&study=$azurStudyId |500|  Content-Type: application/json ||
