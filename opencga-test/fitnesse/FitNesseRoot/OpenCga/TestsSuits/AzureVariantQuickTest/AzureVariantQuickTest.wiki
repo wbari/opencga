@@ -1,0 +1,42 @@
+!define TEST_SYSTEM {slim}
+
+!|Table: Rest Fixture | $baseURL |
+|let|azureUser|js|Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5)||
+|let|azureProject|js|Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5)||
+|let|azureStudy|js|Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5)||
+
+
+!3 Create User
+!|Table: Rest Fixture  | $baseURL |
+| setBody |  { "name": "$azureUser", "id": "$azureUser","email": "test@test.com", "password" : "user_P@ssword",  "account": "full" }|
+| POST | /v1/admin/users/create |200| Content-Type : application/json| jsonbody.error === '' && jsonbody.response[0].result[0].id == '$azureUser'|
+
+
+!3 Login User 
+!|Table: Rest Fixture | $baseURL  |
+| setBody | {"password" : "user_P@ssword"}|
+| setHeader|Content-Type:application/json|
+| POST | /v1/users/$azureUser/login |200|  Content-Type: application/json ||
+|let|azureSessionId|js|response.jsonbody.response[0].result[0].sessionId||
+
+!3 Create Project 
+!|Table: Rest Fixture | $baseURL |
+| setHeaders|!- Content-Type:application/json 
+Authorization : Bearer $azureSessionId-!|
+| setBody |{  "name": "$azureProject",  "alias": "$azureProject","organism" : { "scientificName": "Homo sapiens", "assembly": "GRCh37"}}|
+| POST | /v1/projects/create |200|  Content-Type: application/json ||
+|let|azureProjectId|js|response.jsonbody.response[0].result[0].id.toString()||
+
+!3 Create Study  
+!|Table: Rest Fixture | $baseURL |
+| setBody |{  "name": "$azureStudy", "alias": "$azureStudy", "type": "CASE_CONTROL"}|
+| setHeaders|!- Content-Type:application/json 
+Authorization : Bearer $azureSessionId-!|
+| POST | /v1/studies/create?projectId=$azureProjectId |200|  Content-Type: application/json ||
+|let|azurStudyId|js|response.jsonbody.response[0].result[0].id||
+
+!3 Query Variant 
+!|Table: Rest Fixture | $baseURL |
+| setHeaders|!- Content-Type:application/json 
+Authorization : Bearer $azureSessionId-!|
+| GET | /v1/analysis/variant/query?histogram=false&interval=2000&study=$azurStudyId |500|  Content-Type: application/json |jsonbody.error === 'Study { name: \"$azureUser@$azureProject:$azureStudy\" } not found.' |
